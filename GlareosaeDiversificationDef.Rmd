@@ -1,0 +1,98 @@
+---
+title: "GlareosaeDiversification"
+author: "amesclir"
+date: "05/05/2016"
+output: html_document
+---
+
+Loading packages and tree
+
+```{r}
+
+library(laser)
+library(phytools)
+
+mytree <- read.tree("glareosae.tree")
+mytrees <- read.nexus("mytreesLTT.trees")
+tipstoremove <- c("Cremota","Cspicata", "Cpaniculata", "Celongata", "Cscoparia", "Cmerritt-fernaldi", "Cbolanderi", "Cleptopoda", "Cdeweyana", "Cbromoides", "Cchordorrhyza")
+mytrees2 <- list()
+for (i in 1:length(mytrees)) mytrees2[[i]] <- drop.tip(mytrees[[i]],tipstoremove)
+class(mytrees2) <- "multiPhylo"
+mytrees2
+
+mltt.plot(mytrees2, dcol = F, dlty = T, legend = F, xlab = "Time", ylab = "N", log = "y", backward = TRUE, tol = 1e-4)
+for (i in 1:1001) ltt.lines(mytrees2[[i]], col = "lightgrey", backward = TRUE, tol = 1e-6)
+ltt.lines(mytree, backward = TRUE, tol = 1e-6)
+
+mytreeltt <- ltt(mytree, plot=F, drop.extinct=FALSE, log.lineages=TRUE, gamma=TRUE)
+mytreesltt <- ltt(mytrees2, plot=F, drop.extinct=FALSE, log.lineages=TRUE, gamma=TRUE)
+mytreeslttgamma <- vector()
+for (i in 1:1001) mytreeslttgamma[i] <-  mytreesltt[[i]]$gamma
+mean(mytreeslttgamma)
+sd(mytreeslttgamma)
+
+
+myBtimes <- getBtimes("glareosae.tree")
+
+write.tree(mytrees2, "glareosaetrees.tree")
+myBtimes.batch <- getBtimes.batch("glareosaetrees.tree")
+
+myfitSPVAR <- fitSPVAR(myBtimes, init=c(2, .2, .1))
+myfitEXVAR <- fitEXVAR(myBtimes, init=c(.3, .01, 1))
+myfitBOTHVAR <- fitBOTHVAR(myBtimes, init=c(.3, .5, .1, .5))
+
+myparameters <- list()
+myparameters$lam0 <- myfitSPVAR$lam0
+myparameters$k <- myfitSPVAR$k
+myparameters$mu0 <- myfitSPVAR$mu0
+myparameters$z <- 1000
+plotRate(myBtimes, myparameters)
+
+myfitdAICrc <- fitdAICrc(myBtimes, modelset = c("pureBirth", "bd", "DDL", "DDX", "yule2rate", "yule3rate"), ints = 100)
+
+myfitdAICrc.batch <- list()
+for (i in 1:1000) myfitdAICrc.batch[[i]] <- fitdAICrc(myBtimes.batch[i,], modelset = c("pureBirth", "bd", "DDL", "DDX", "yule2rate", "yule3rate"), ints = 100)
+
+myfitdAICrc.batch.dAIC <- matrix(0,1000,6)
+for (i in 1:1000) myfitdAICrc.batch.dAIC[i,] <- myfitdAICrc.batch[[i]][,15]
+for (i in 1:1000) myfitdAICrc.batch.dAIC[i,][!myfitdAICrc.batch.dAIC[i,] == min(myfitdAICrc.batch.dAIC[i,])] <- 1
+
+
+colSums(myfitdAICrc.batch.dAIC)
+colMeans(myfitdAICrc.batch.dAIC)
+
+
+myDDL.batch <- matrix(0,1000,4)
+for (i in 1:1000) myDDL.batch[i,] <- unlist(DDL(myBtimes.batch[i,]))
+myDDL.batch.means <- colMeans(myDDL.batch)
+myDDL.batch.sds <- apply(myDDL.batch, 2, sd)
+myDDL.batch.means.sds <- rbind (myDDL.batch.means,myDDL.batch.sds)
+colnames(myDDL.batch.means.sds) = c("LH", "aic", "r1", "kparam")
+rownames(myDDL.batch.means.sds) = c("Mean", "SD")
+myDDL.batch.means.sds
+```
+
+
+Script from http://www.sysbot.biologie.uni-muenchen.de/en/people/cusimano/corsimApplied.R
+
+```{r}
+
+
+###########################################
+	#GAMMA STATISTIC
+###########################################
+gamma <- function(xsim){
+	reps <- length(xsim[,1])
+	GAMMAsim <- matrix(nrow=reps, ncol=2)
+	for (j in 1:reps)
+		GAMMAsim[j,] <- cbind(gamStat(xsim[j,])[[1]], gamStat(xsim[j,])[[2]])
+
+	sumGAMMA <- rbind(summary(GAMMAsim)[4,], sd(GAMMAsim))
+	sumGAMMA[1,] <- as.numeric(gsub("Mean   :", "", sumGAMMA[1,]))
+	dimnames(sumGAMMA) <- list(c("MEAN", "SD"), c("Gamma", "p_value"))
+	list(Results_Gamma_statistic=GAMMAsim, Summary_Gamma_statistic=sumGAMMA)
+	}
+
+
+```
+
