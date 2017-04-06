@@ -1,0 +1,89 @@
+New results from LASER
+
+FOR THE ANALYSIS OF 1 TREE
+
+Best Constant Rate Model = pureBirth  AIC  -21.13358 
+
+Best Rate Variable Model = yule3rate  AIC  -27.66712 
+
+delta AICrc =  6.533539
+
+IT SEEMS THAT THE CONSTAN MODEL IS REJECTED BUT THE BEST MODEL IS NOT CLEAR, THERE ARE FOUR CANDIDATES
+> myDDL
+$LH
+[1] 14.83229
+
+$aic
+[1] -25.66458
+
+$r1
+[1] 0.8026242
+
+$kparam
+[1] 32.58869
+
+> myyule2rate
+          LH           r1           r2          st1          AIC 
+ 16.79288867   0.49890516   0.07900424   0.93477235 -27.58577734 
+> myyule3rate
+          LH           r1           r2           r3          st1          st2          AIC 
+ 18.83355915   0.43853440   1.58273771   0.07909293   1.03753901   0.93368055 -27.66711830 
+> myyule4rate
+          LH           r1           r2           r3           r4          st1          st2 
+ 19.83625582   0.48968601   0.14692739   1.58273771   0.07909293   1.34911440   1.03753901 
+         st3          AIC 
+  0.93368055 -25.67251164
+
+WHEN WE ANALYZE THE 1000 POSTBURNIN TREES
+THE BEST MODEL IS DDL AND VERY CLOSE YULE2RATE AND YULE3RATE
+> myDDL.batch.means.sds
+            LH        aic        r1    kparam
+Mean 14.274992 -24.549984 0.7160683  2400.834
+SD    3.907185   7.814369 0.1615024 33328.791
+> myyule2rate.batch.means.sds
+           LH         r1         r2       st1        AIC
+Mean 15.09079 0.43816586 0.13243114 0.6227048 -24.181576
+SD    4.05847 0.07743963 0.04825374 0.2082960   8.116941
+> myyule3rate.batch.means.sds
+           LH        r1       r2        r3      st1      st2       AIC
+Mean 16.99513 0.5220743 1.756825 0.1935179 2.722447 1.714160 -23.99027
+SD    4.17637 0.4797622 1.746178 0.1078595 1.463993 1.203919   8.35274
+
+> colMeans(mymodels.batch)
+purebirth        bd       DDL       DDX yule2rate yule3rate yule4rate 
+-21.80710   0.00000 -24.54998 -22.66237 -24.18158 -23.99027 -23.57981 
+(THERE WAS A PROBLEM WITH THE DB MODEL)
+> colSums(ModelSelect)
+purebirth        bd       DDL       DDX yule2rate yule3rate yule4rate 
+      927      1000       587       972       849       816       849 
+> 1-colMeans(ModelSelect)
+purebirth        bd       DDL       DDX yule2rate yule3rate yule4rate 
+    0.073     0.000     0.413     0.028     0.151     0.184     0.151 
+THE DDL MODEL SEEMS TO BE THE BEST BUT ALSO COULD BE ANY YULE RATE WITH 2, 3 OR 4 DIVERSIFICATION RATES
+
+
+
+OK. VAMOS A PASAR DEL LASER Y VAMOS A PONER LOS DATOS DE BAMM
+> shift_probs
+  shifts    prob
+1      0 0.86700
+2      1 0.10700
+3      2 0.02350
+4      3 0.00176
+5      4 0.00118
+> bfmat
+           0          1         2      3      4
+0 1.00000000 4.17218543 9.5454545 78.750 78.750
+1 0.23968254 1.00000000 2.2878788 18.875 18.875
+2 0.10476190 0.43708609 1.0000000  8.250  8.250
+3 0.01269841 0.05298013 0.1212121  1.000  1.000
+4 0.01269841 0.05298013 0.1212121  1.000  1.000
+
+ESTE ES EL MEJOR MODELO
+
+> best$eventData
+[[1]]
+  node time    lam1         lam2       mu1 mu2 index
+1   29    0 0.80374 -0.003311361 0.2242999   0     1
+
+BASICAMENTE EMPIEZA CON UNA TASA DE SPECIACION DE 0.80374 Y EXTINCION DE 0.2242999. CON EL TIEMPO LA TASA DE SPECIACION DECRESE -0.003311361 Y LA EXTINCION SIGUE IGUAL. HAY UNA GRAFICO MUY CHULO.

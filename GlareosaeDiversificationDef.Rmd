@@ -21,13 +21,14 @@ class(mytrees2) <- "multiPhylo"
 mytrees2
 
 mltt.plot(mytrees2, dcol = F, dlty = T, legend = F, xlab = "Time", ylab = "N", log = "y", backward = TRUE, tol = 1e-4)
-for (i in 1:1001) ltt.lines(mytrees2[[i]], col = "lightgrey", backward = TRUE, tol = 1e-6)
+for (i in 1:1000) ltt.lines(mytrees2[[i]], col = "lightgrey", backward = TRUE, tol = 1e-6)
 ltt.lines(mytree, backward = TRUE, tol = 1e-6)
 
 mytreeltt <- ltt(mytree, plot=F, drop.extinct=FALSE, log.lineages=TRUE, gamma=TRUE)
+mytreeltt
 mytreesltt <- ltt(mytrees2, plot=F, drop.extinct=FALSE, log.lineages=TRUE, gamma=TRUE)
 mytreeslttgamma <- vector()
-for (i in 1:1001) mytreeslttgamma[i] <-  mytreesltt[[i]]$gamma
+for (i in 1:1000) mytreeslttgamma[i] <-  mytreesltt[[i]]$gamma
 mean(mytreeslttgamma)
 sd(mytreeslttgamma)
 
@@ -37,30 +38,40 @@ myBtimes <- getBtimes("glareosae.tree")
 write.tree(mytrees2, "glareosaetrees.tree")
 myBtimes.batch <- getBtimes.batch("glareosaetrees.tree")
 
-myfitSPVAR <- fitSPVAR(myBtimes, init=c(2, .2, .1))
-myfitEXVAR <- fitEXVAR(myBtimes, init=c(.3, .01, 1))
-myfitBOTHVAR <- fitBOTHVAR(myBtimes, init=c(.3, .5, .1, .5))
+mypureBirth <- pureBirth(myBtimes)
+mybd <- bd(myBtimes)
+myDDL <- DDL(myBtimes)
+myDDX <- DDX(myBtimes)
+myyule2rate <-  yule2rate(myBtimes, ints = 100)
+myyule3rate <-  yule3rate(myBtimes, ints = 100)
+myyule4rate <- yule4rate(myBtimes, ints = 100)
 
-myparameters <- list()
-myparameters$lam0 <- myfitSPVAR$lam0
-myparameters$k <- myfitSPVAR$k
-myparameters$mu0 <- myfitSPVAR$mu0
-myparameters$z <- 1000
-plotRate(myBtimes, myparameters)
-
-myfitdAICrc <- fitdAICrc(myBtimes, modelset = c("pureBirth", "bd", "DDL", "DDX", "yule2rate", "yule3rate"), ints = 100)
-
-myfitdAICrc.batch <- list()
-for (i in 1:1000) myfitdAICrc.batch[[i]] <- fitdAICrc(myBtimes.batch[i,], modelset = c("pureBirth", "bd", "DDL", "DDX", "yule2rate", "yule3rate"), ints = 100)
-
-myfitdAICrc.batch.dAIC <- matrix(0,1000,6)
-for (i in 1:1000) myfitdAICrc.batch.dAIC[i,] <- myfitdAICrc.batch[[i]][,15]
-for (i in 1:1000) myfitdAICrc.batch.dAIC[i,][!myfitdAICrc.batch.dAIC[i,] == min(myfitdAICrc.batch.dAIC[i,])] <- 1
+mypureBirth$aic
+mybd$aic
+myDDL$aic
+myDDX$aic
+myyule2rate[5]
+myyule3rate[7]
+myyule4rate[9]
 
 
-colSums(myfitdAICrc.batch.dAIC)
-colMeans(myfitdAICrc.batch.dAIC)
+mypureBirth.batch <- matrix(0,1000,3)
+for (i in 1:1000) mypureBirth.batch[i,] <- unlist(pureBirth(myBtimes.batch[i,]))
+mypureBirth.batch.means <- colMeans(mypureBirth.batch)
+mypureBirth.batch.sds <- apply(mypureBirth.batch, 2, sd)
+mypureBirth.batch.means.sds <- rbind (mypureBirth.batch.means,mypureBirth.batch.sds)
+colnames(mypureBirth.batch.means.sds) = c("LH", "aic", "r1")
+rownames(mypureBirth.batch.means.sds) = c("Mean", "SD")
+mypureBirth.batch.means.sds
 
+mybd.batch <- matrix(0,1000,4)
+for (i in 1:1000) mybd.batch[i,] <- unlist(bd(myBtimes.batch[i,]))
+mybd.batch.means <- colMeans(mybd.batch)
+mybd.batch.sds <- apply(mybd.batch, 2, sd)
+mybd.batch.means.sds <- rbind (mybd.batch.means,mybd.batch.sds)
+colnames(mybd.batch.means.sds) = c("LH", "r1", "a", "aic")
+rownames(mybd.batch.means.sds) = c("Mean", "SD")
+mybd.batch.means.sds
 
 myDDL.batch <- matrix(0,1000,4)
 for (i in 1:1000) myDDL.batch[i,] <- unlist(DDL(myBtimes.batch[i,]))
@@ -70,28 +81,124 @@ myDDL.batch.means.sds <- rbind (myDDL.batch.means,myDDL.batch.sds)
 colnames(myDDL.batch.means.sds) = c("LH", "aic", "r1", "kparam")
 rownames(myDDL.batch.means.sds) = c("Mean", "SD")
 myDDL.batch.means.sds
+
+myDDX.batch <- matrix(0,1000,4)
+for (i in 1:1000) myDDX.batch[i,] <- unlist(DDX(myBtimes.batch[i,]))
+myDDX.batch.means <- colMeans(myDDX.batch)
+myDDX.batch.sds <- apply(myDDX.batch, 2, sd)
+myDDX.batch.means.sds <- rbind (myDDX.batch.means,myDDX.batch.sds)
+colnames(myDDX.batch.means.sds) = c("LH", "aic", "r1", "xparam")
+rownames(myDDX.batch.means.sds) = c("Mean", "SD")
+myDDX.batch.means.sds
+
+myyule2rate.batch <- matrix(0,1000,5)
+for (i in 1:1000) myyule2rate.batch[i,] <- yule2rate(myBtimes.batch[i,], ints = 100)
+myyule2rate.batch.means <- colMeans(myyule2rate.batch)
+myyule2rate.batch.sds <- apply(myyule2rate.batch, 2, sd)
+myyule2rate.batch.means.sds <- rbind (myyule2rate.batch.means,myyule2rate.batch.sds)
+colnames(myyule2rate.batch.means.sds) = names(myyule2rate)
+rownames(myyule2rate.batch.means.sds) = c("Mean", "SD")
+myyule2rate.batch.means.sds
+
+
+myyule3rate.batch <- matrix(0,1000,7)
+for (i in 1:1000) myyule3rate.batch[i,] <- yule3rate(myBtimes.batch[i,], ints = 100)
+myyule3rate.batch.means <- colMeans(myyule3rate.batch)
+myyule3rate.batch.sds <- apply(myyule3rate.batch, 2, sd)
+myyule3rate.batch.means.sds <- rbind (myyule3rate.batch.means,myyule3rate.batch.sds)
+colnames(myyule3rate.batch.means.sds) = names(myyule3rate)
+rownames(myyule3rate.batch.means.sds) = c("Mean", "SD")
+myyule3rate.batch.means.sds
+
+
+myyule3rate.batch <- matrix(0,1000,7)
+for (i in 1:1000) myyule3rate.batch[i,] <- yule3rate(myBtimes.batch[i,], ints = 100)
+myyule3rate.batch.means <- colMeans(myyule3rate.batch)
+myyule3rate.batch.sds <- apply(myyule3rate.batch, 2, sd)
+myyule3rate.batch.means.sds <- rbind (myyule3rate.batch.means,myyule3rate.batch.sds)
+colnames(myyule3rate.batch.means.sds) = names(myyule3rate)
+rownames(myyule3rate.batch.means.sds) = c("Mean", "SD")
+myyule3rate.batch.means.sds
+
+
+myyule4rate.batch <- matrix(0,1000,9)
+for (i in 1:1000) myyule4rate.batch[i,] <- yule4rate(myBtimes.batch[i,], ints = 100)
+myyule4rate.batch.means <- colMeans(myyule4rate.batch)
+myyule4rate.batch.sds <- apply(myyule4rate.batch, 2, sd)
+myyule4rate.batch.means.sds <- rbind (myyule4rate.batch.means,myyule4rate.batch.sds)
+colnames(myyule4rate.batch.means.sds) = names(myyule4rate)
+rownames(myyule4rate.batch.means.sds) = c("Mean", "SD")
+myyule4rate.batch.means.sds
+
+
+mymodels.batch <- cbind(mypureBirth.batch[,2],mybd.batch[,4],myDDL.batch[,2],myDDX.batch[,2],myyule2rate.batch[,5],myyule3rate.batch[,7],myyule4rate.batch[,9])
+colnames(mymodels.batch) = c("purebirth", "bd","DDL","DDX","yule2rate","yule3rate","yule4rate")
+colMeans(mymodels.batch)
+
+DeltaAIC <- mymodels.batch - apply(mymodels.batch,1, min) 
+ModelSelect <- DeltaAIC
+ModelSelect[!ModelSelect == 0]<-1
+
+colSums(ModelSelect)
+1-colMeans(ModelSelect)
+
 ```
 
 
-Script from http://www.sysbot.biologie.uni-muenchen.de/en/people/cusimano/corsimApplied.R
+Now we are going to work with BAMM
 
 ```{r}
+library(BAMMtools)
+library(coda)
+
+genus<-'dianthus'
+
+## load data
+mytree <- read.tree("glareosae.tree")
+mcmcout <- read.csv("mcmc_out.txt")
+
+## create edata
+edata <- getEventData(mytree, eventdata = "event_data.txt", burnin=0.15)
 
 
-###########################################
-	#GAMMA STATISTIC
-###########################################
-gamma <- function(xsim){
-	reps <- length(xsim[,1])
-	GAMMAsim <- matrix(nrow=reps, ncol=2)
-	for (j in 1:reps)
-		GAMMAsim[j,] <- cbind(gamStat(xsim[j,])[[1]], gamStat(xsim[j,])[[2]])
+#### Check convergence
+plot(mcmcout$logLik ~ mcmcout$generation)
 
-	sumGAMMA <- rbind(summary(GAMMAsim)[4,], sd(GAMMAsim))
-	sumGAMMA[1,] <- as.numeric(gsub("Mean   :", "", sumGAMMA[1,]))
-	dimnames(sumGAMMA) <- list(c("MEAN", "SD"), c("Gamma", "p_value"))
-	list(Results_Gamma_statistic=GAMMAsim, Summary_Gamma_statistic=sumGAMMA)
-	}
+burnstart <- floor(0.15 * nrow(mcmcout))
+postburn <- mcmcout[burnstart:nrow(mcmcout), ]
+
+effectiveSize(postburn$N_shifts)
+effectiveSize(postburn$logLik)
+
+
+
+### Shift probabilities
+shift_probs <- summary(edata)
+shift_probs
+
+
+### Bayes factors
+bfmat <- computeBayesFactors(postburn, expectedNumberOfShifts=1, burnin=0.15)
+bfmat
+
+#### PLOT CREDIBLE SHIFTS
+css <- credibleShiftSet(edata, expectedNumberOfShifts=1, threshold=5, set.limit = 0.95)
+
+plot.credibleshiftset(css,spex = "netdiv")
+
+
+### PLOT BEST SHIFT
+par(mfrow=c(1,1))
+best <- getBestShiftConfiguration(edata, expectedNumberOfShifts=1)
+plot.bammdata(best, lwd = 2,spex = "netdiv",label=T,cex=0.5)
+axisPhylo()
+addBAMMshifts(best, cex=2.5)
+best$eventData
+
+### RATE through time
+st <- max(branching.times(mytree))
+plotRateThroughTime(edata, intervalCol="red", avgCol="red", start.time=st, ylim=c(0,1), cex.axis=2,ratetype='netdiv')
+
 
 
 ```
