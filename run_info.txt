@@ -1,7 +1,7 @@
 Command line: bamm -c Bamm.txt
 Git commit id: 8c80095e524e4abd6dfe40499ece8deef45ffc31
-Random seed: 1491487919
-Start time: Thu Apr  6 16:11:59 2017
+Random seed: 1491549785
+Start time: Fri Apr  7 09:23:05 2017
 
 Current parameter settings:
        acceptanceInfoFileName    acceptance_info.txt
@@ -23,7 +23,7 @@ fastSimulatePriorExperimental    0
      fastSimulatePrior_BurnIn    0.05
 fastSimulatePrior_Generations    5000000
  fastSimulatePrior_SampleFreq    50
-       globalSamplingFraction    0.34
+       globalSamplingFraction    1.00
           initialNumberEvents    0
               initializeModel    1
                   lambdaInit0    0.032
@@ -90,5 +90,5 @@ updateRateEventNumberForBranch    0.0
  useGlobalSamplingProbability    1
    validateEventConfiguration    0
    writeMeanBranchLengthTrees    0
-End time: Thu Apr  6 16:15:52 2017
+End time: Fri Apr  7 09:27:13 2017
 

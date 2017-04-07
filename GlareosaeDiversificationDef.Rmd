@@ -151,8 +151,6 @@ Now we are going to work with BAMM
 library(BAMMtools)
 library(coda)
 
-genus<-'dianthus'
-
 ## load data
 mytree <- read.tree("glareosae.tree")
 mcmcout <- read.csv("mcmc_out.txt")

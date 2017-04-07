@@ -48,7 +48,7 @@ useGlobalSamplingProbability = 1
 # Whether to use a "global" sampling probability. If False (0), expects a file
 # name for species-specific sampling probabilities (see sampleProbsFilename)
                                         
-globalSamplingFraction = 0.34            
+globalSamplingFraction = 1.00            
 # The sampling probability. If useGlobalSamplingFraction = 0, this is ignored
 # and BAMM looks for a file name with species-specific sampling fractions
 
